@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anti Food Waste App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Anti Food Waste App</h1>
+    </header>
+
+    <main>
+        <section id="add-item">
+            <h2>Add Food Item</h2>
+            <form id="item-form">
+                <input type="text" id="item-name" placeholder="Food Name" required>
+                <input type="date" id="expiry-date" required>
+                <select id="category">
+                    <option value="fruits">Fruits</option>
+                    <option value="vegetables">Vegetables</option>
+                    <option value="dairy">Dairy</option>
+                    <option value="meat">Meat</option>
+                    <option value="other">Other</option>
+                </select>
+                <button type="submit">Add Item</button>
+            </form>
+        </section>
+
+        <section id="food-list">
+            <h2>Food Items</h2>
+            <ul id="items"></ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Created for food sharing and reducing waste ❤️</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
