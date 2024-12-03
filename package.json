@@ -1,0 +1,19 @@
+{
+  "name": "anti-food",
+  "version": "1.0.0",
+  "description": "anti food waste app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Razvan1603/anti-food-waste.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Razvan1603/anti-food-waste/issues"
+  },
+  "homepage": "https://github.com/Razvan1603/anti-food-waste#readme"
+}
