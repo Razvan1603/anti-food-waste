@@ -1,39 +1,86 @@
-// Get references to DOM elements
-const form = document.getElementById('item-form');
-const itemList = document.getElementById('items');
+// src/App.js
+import React, { useState, useEffect } from 'react';
 
-// Handle form submission
-form.addEventListener('submit', (e) => {
-    e.preventDefault();
+const App = () => {
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState({ name: '', expiryDate: '', category: '' });
 
-    // Get form values
-    const itemName = document.getElementById('item-name').value;
-    const expiryDate = document.getElementById('expiry-date').value;
-    const category = document.getElementById('category').value;
+  // Funcția pentru a încărca itemele
+  const loadItems = async () => {
+    try {
+      const response = await fetch('/api/items');
+      if (!response.ok) throw new Error('Failed to fetch items');
+      const data = await response.json();
+      setItems(data);
+    } catch (error) {
+      console.error('Error loading items:', error);
+    }
+  };
 
-    // Create new list item
-    const listItem = document.createElement('li');
-    listItem.innerHTML = `
-        <strong>${itemName}</strong> - <em>${category}</em> (expires: ${expiryDate})
-        <button class="share-btn">Share</button>
-    `;
+  // Funcția pentru a adăuga un item
+  const addItem = async (event) => {
+    event.preventDefault();
 
-    listItem.querySelector('.share-btn').addEventListener('click', () => {
-        alert(`Sharing ${itemName} with the community!`);
+    const response = await fetch('/api/items', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newItem),
     });
 
-    itemList.appendChild(listItem);
+    if (response.ok) {
+      setNewItem({ name: '', expiryDate: '', category: '' });  // Reset form
+      loadItems();  // Reîncarcă itemele
+    } else {
+      alert('Failed to add item');
+    }
+  };
 
-    form.reset();
-});
+  // Încărcăm itemele la inițializare
+  useEffect(() => {
+    loadItems();
+  }, []);
 
-setInterval(() => {
-    const now = new Date().toISOString().split('T')[0]; // Today's date
-    document.querySelectorAll('li').forEach((item) => {
-        const expiry = item.textContent.match(/expires: (\d{4}-\d{2}-\d{2})/)[1];
-        if (expiry === now) {
-            item.style.color = 'red';
-            alert(`The item "${item.textContent.split(' - ')[0]}" is about to expire!`);
-        }
-    });
-}, 10000); 
+  return (
+    <div>
+      <h1>Anti Food Waste App</h1>
+      <h2>Add Food Item</h2>
+      <form onSubmit={addItem}>
+        <input
+          type="text"
+          placeholder="Food Name"
+          value={newItem.name}
+          onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+        />
+        <input
+          type="date"
+          value={newItem.expiryDate}
+          onChange={(e) => setNewItem({ ...newItem, expiryDate: e.target.value })}
+        />
+        <select
+          value={newItem.category}
+          onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+        >
+          <option value="fruits">Fruits</option>
+          <option value="vegetables">Vegetables</option>
+          <option value="dairy">Dairy</option>
+          <option value="meat">Meat</option>
+          <option value="other">Other</option>
+        </select>
+        <button type="submit">Add Item</button>
+      </form>
+      
+      <h2>Food Items</h2>
+      <ul>
+        {items.map(item => (
+          <li key={item.id}>
+            <strong>{item.name}</strong> - <em>{item.category}</em> (expires: {item.expiryDate})
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default App;
