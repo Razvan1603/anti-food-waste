@@ -1,0 +1,117 @@
+openapi: 3.0.0
+info:
+  title: Anti Food Waste API
+  description: API for managing and sharing food items to reduce waste
+  version: 1.0.0
+
+paths:
+  /items:
+    get:
+      summary: Get all food items
+      description: Retrieve a list of all food items in the system.
+      responses:
+        200:
+          description: A list of food items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FoodItem'
+
+    post:
+      summary: Add a new food item
+      description: Create a new food item in the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoodItem'
+      responses:
+        201:
+          description: Item created successfully
+        400:
+          description: Bad request
+
+  /items/{id}:
+    get:
+      summary: Get a specific food item
+      description: Retrieve details of a single food item by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the food item
+          schema:
+            type: string
+      responses:
+        200:
+          description: Food item details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FoodItem'
+        404:
+          description: Item not found
+
+    put:
+      summary: Update a food item
+      description: Update details of a specific food item.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the food item
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoodItem'
+      responses:
+        200:
+          description: Item updated successfully
+        404:
+          description: Item not found
+
+    delete:
+      summary: Delete a food item
+      description: Remove a food item from the system.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the food item
+          schema:
+            type: string
+      responses:
+        204:
+          description: Item deleted successfully
+        404:
+          description: Item not found
+
+components:
+  schemas:
+    FoodItem:
+      type: object
+      required:
+        - name
+        - expiryDate
+        - category
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the food item
+        name:
+          type: string
+          description: Name of the food item
+        expiryDate:
+          type: string
+          format: date
+          description: Expiry date of the item
+        category:
+          type: string
+          description: Category of the food item (e.g., fruits, vegetables)
