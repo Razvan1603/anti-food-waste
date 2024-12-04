@@ -5,7 +5,6 @@ const App = () => {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState({ name: '', expiryDate: '', category: '' });
 
-  // Funcția pentru a încărca itemele
   const loadItems = async () => {
     try {
       const response = await fetch('/api/items');
@@ -17,7 +16,7 @@ const App = () => {
     }
   };
 
-  // Funcția pentru a adăuga un item
+
   const addItem = async (event) => {
     event.preventDefault();
 
@@ -30,14 +29,14 @@ const App = () => {
     });
 
     if (response.ok) {
-      setNewItem({ name: '', expiryDate: '', category: '' });  // Reset form
-      loadItems();  // Reîncarcă itemele
+      setNewItem({ name: '', expiryDate: '', category: '' });  
+      loadItems(); 
     } else {
       alert('Failed to add item');
     }
   };
 
-  // Încărcăm itemele la inițializare
+ 
   useEffect(() => {
     loadItems();
   }, []);
