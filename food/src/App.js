@@ -23,6 +23,19 @@ function App() {
   }, []);
 
   const handleAddItem = () => {
+    if (!newItem.name.trim()) {
+      alert('Please enter a food name.');
+      return;
+    }
+    if (!newItem.expiryDate) {
+      alert('Please select an expiry date.');
+      return;
+    }
+    if (new Date(newItem.expiryDate) <= new Date()) {
+      alert('Expiry date must be in the future.');
+      return;
+    }
+  
     fetch('/api/fridge', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
