@@ -1,7 +1,74 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
-function App() {
+function LoginRegister({ onLogin }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
+
+
+function submitUsername(e){
+  setUsername(e.target.value);
+}
+function submitPassword(e){
+  setPassword(e.target.value);
+}
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const endpoint = isLogin ? '/api/login' : '/api/register';
+    console.log(username);
+
+    fetch(`http://localhost:5000${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Request failed');
+        console.log(res);
+        return res.json();
+      })
+      .then((data) => {
+        if (isLogin && data.token) {
+          localStorage.setItem('token', data.token);
+          onLogin(username);
+        } else if (!isLogin) {
+          alert('Registration successful');
+        }
+      })
+      .catch(() => alert('Error occurred'));
+  };
+
+  return (
+    <div className="login-register">
+      <h2>{isLogin ? 'Login' : 'Register'}</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={submitUsername}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={submitPassword}
+          required
+        />
+        <button type="submit">{isLogin ? 'Login' : 'Register'}</button>
+      </form>
+      <button onClick={() => setIsLogin(!isLogin)}>
+        Switch to {isLogin ? 'Register' : 'Login'}
+      </button>
+    </div>
+  );
+}
+
+function Dashboard({ username }) {
   const [fridgeItems, setFridgeItems] = useState([]);
   const [groups, setGroups] = useState([]);
   const [alerts, setAlerts] = useState([]);
@@ -9,53 +76,57 @@ function App() {
   const [newGroup, setNewGroup] = useState({ name: '', tag: '' });
 
   useEffect(() => {
-    fetch('/api/fridge')
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
+
+    fetch('/api/fridge', { headers })
       .then((response) => response.json())
       .then((data) => setFridgeItems(data));
 
-    fetch('/api/groups')
+    fetch('/api/groups', { headers })
       .then((response) => response.json())
       .then((data) => setGroups(data));
 
-    fetch('/api/alerts')
+    fetch('/api/alerts', { headers })
       .then((response) => response.json())
       .then((data) => setAlerts(data));
   }, []);
 
   const handleAddItem = () => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+
     fetch('/api/fridge', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(newItem),
-    })
-      .then(() => {
+    }).then((response) => {
+      if (response.ok) {
         alert('Item added successfully!');
         setFridgeItems([...fridgeItems, newItem]);
         setNewItem({ name: '', expiryDate: '', category: 'Dairy' });
-      });
+      } else {
+        alert('Failed to add item');
+      }
+    });
   };
 
   const handleAddGroup = () => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+
     fetch('/api/groups', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(newGroup),
-    })
-      .then(() => {
+    }).then((response) => {
+      if (response.ok) {
         alert('Group added successfully!');
         setGroups([...groups, newGroup]);
         setNewGroup({ name: '', tag: '' });
-      });
-  };
-
-  const handleMarkAvailable = (itemId) => {
-    fetch(`/api/fridge/mark-available/${itemId}`, { method: 'POST' }).then(() => {
-      alert('Item marked as available!');
-      setFridgeItems(
-        fridgeItems.map((item) =>
-          item.id === itemId ? { ...item, available: true } : item
-        )
-      );
+      } else {
+        alert('Failed to add group');
+      }
     });
   };
 
@@ -63,10 +134,20 @@ function App() {
     <div className="App">
       <header>
         <h1>Food Sharing App</h1>
+        <div className="user-info">
+          <span>👤 {username}</span>
+          <button
+            onClick={() => {
+              localStorage.removeItem('token');
+              window.location.href = '/';
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       <main>
-        {/* Fridge Section */}
         <section className="fridge">
           <h2>Your Fridge</h2>
           <div className="add-item">
@@ -95,15 +176,11 @@ function App() {
             {fridgeItems.map((item) => (
               <li key={item.id}>
                 <strong>{item.name}</strong> - {item.expiryDate} - {item.category}
-                {!item.available && (
-                  <button onClick={() => handleMarkAvailable(item.id)}>Mark as Available</button>
-                )}
               </li>
             ))}
           </ul>
         </section>
 
-        {/* Groups Section */}
         <section className="groups">
           <h2>Your Groups</h2>
           <div className="add-group">
@@ -130,7 +207,6 @@ function App() {
           </ul>
         </section>
 
-        {/* Alerts Section */}
         <section className="alerts">
           <h2>Alerts</h2>
           <ul>
@@ -141,6 +217,25 @@ function App() {
         </section>
       </main>
     </div>
+  );
+}
+
+function App() {
+  const [username, setUsername] = useState(null);
+
+  return (
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={!username ? <LoginRegister onLogin={setUsername} /> : <Navigate to="/dashboard" />}
+        />
+        <Route
+          path="/dashboard"
+          element={username ? <Dashboard username={username} /> : <Navigate to="/" />}
+        />
+      </Routes>
+    </Router>
   );
 }
 

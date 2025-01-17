@@ -3,6 +3,12 @@
 # dependencies
 
 /food/node_modules
+/food/package-lock.json
+/food/package.json
+/node_modules
+/package.json
+/package-lock.json
+/server/node_modules
 /.pnp
 .pnp.js
 

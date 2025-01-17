@@ -1,94 +1,129 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const dotenv = require('dotenv');
 const swaggerUi = require('swagger-ui-express');
-const fs = require('fs');
-const app = express();
-const port = 5020;
+const YAML = require('yamljs');
+const User = require('./models/user.js');
+const FridgeItem = require('./models/fridgeItem');
+const Group = require('./models/group');
+const Alert = require('./models/alert');
 
-app.use(cors());
+// Configurare .env
+dotenv.config();
+const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key';
+const swaggerDocument = YAML.load('./swagger.yaml');
+
+const app = express();
+const PORT = 5000;
+
+// Middleware
 app.use(express.json());
 
-// Dummy data
-let fridgeItems = [
-  { id: 1, name: 'Milk', expiryDate: '2025-01-18', category: 'Dairy', available: false },
-  { id: 2, name: 'Carrots', expiryDate: '2025-01-20', category: 'Vegetables', available: false },
-  { id: 3, name: 'Chicken', expiryDate: '2025-01-17', category: 'Meat', available: true },
-];
+// Configurare CORS
+const corsOptions = {
+  origin: 'http://localhost:3000', // Permite cereri doar din acest domeniu
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specifică metodele permise
+  allowedHeaders: ['Content-Type', 'Authorization'], // Specifică header-ele permise
+};
 
-let groups = [
-  { id: 1, name: 'Veggie Lovers', tag: 'Vegetarian' },
-  { id: 2, name: 'Meat Eaters', tag: 'Carnivores' },
-  { id: 3, name: 'Fitness Enthusiasts', tag: 'Healthy' },
-];
-
-let alerts = [
-  { id: 1, message: 'Milk will expire in 2 days!' },
-  { id: 2, message: 'Carrots will expire in 4 days!' },
-];
-
-// Swagger setup
-const YAML = require('yaml');
-const swaggerDocument = YAML.parse(fs.readFileSync('./swagger.yaml', 'utf8'));
-
+app.use(cors()); // Aplică middleware-ul CORS
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+// MongoDB connection
+mongoose
+  .connect('mongodb+srv://ciuntudaniel22:FoodSharing25@foodsharing.s1fhm.mongodb.net/?retryWrites=true&w=majority&appName=foodSharing', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error('MongoDB connection error:', err));
+
+// Authentication middleware
+const authenticate = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
 // Routes
-// Get all fridge items
-app.get('/api/fridge', (req, res) => {
-  res.json(fridgeItems);
-});
-
-// Add a new fridge item
-app.post('/api/fridge', (req, res) => {
-  const newItem = { ...req.body, id: Date.now(), available: false };
-  fridgeItems.push(newItem);
-  res.status(201).send('Item added successfully');
-});
-
-// Mark a fridge item as available
-app.post('/api/fridge/mark-available/:id', (req, res) => {
-  const { id } = req.params;
-  const item = fridgeItems.find((item) => item.id === parseInt(id));
-  if (item) {
-    item.available = true;
-    res.send('Item marked as available');
-  } else {
-    res.status(404).send('Item not found');
+app.post('/api/register', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ username, password: hashedPassword });
+    await user.save();
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Claim a fridge item
-app.post('/api/fridge/claim/:id', (req, res) => {
-  const { id } = req.params;
-  fridgeItems = fridgeItems.filter((item) => item.id !== parseInt(id));
-  res.status(200).send('Item claimed successfully');
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  console.log(username, password);
+  try {
+    const user = await User.findOne({ username });
+    console.log(user);
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    const token = jwt.sign({ username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+    res.status(200).json({ token });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// Get all groups
-app.get('/api/groups', (req, res) => {
+// Fridge Items
+app.get('/api/fridge', authenticate, async (req, res) => {
+  const items = await FridgeItem.find();
+  res.json(items);
+});
+
+app.post('/api/fridge', authenticate, async (req, res) => {
+  const { name, expiryDate, category } = req.body;
+  try {
+    const newItem = new FridgeItem({ name, expiryDate, category, available: true });
+    await newItem.save();
+    res.status(201).json({ message: 'Item added successfully', item: newItem });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Groups
+app.get('/api/groups', authenticate, async (req, res) => {
+  const groups = await Group.find();
   res.json(groups);
 });
 
-// Add a new group
-app.post('/api/groups', (req, res) => {
-  const newGroup = { ...req.body, id: Date.now() };
-  groups.push(newGroup);
-  res.status(201).send('Group added successfully');
+app.post('/api/groups', authenticate, async (req, res) => {
+  const { name, tag } = req.body;
+  try {
+    const newGroup = new Group({ name, tag });
+    await newGroup.save();
+    res.status(201).json({ message: 'Group added successfully', group: newGroup });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// Get all alerts
-app.get('/api/alerts', (req, res) => {
+// Alerts
+app.get('/api/alerts', authenticate, async (req, res) => {
+  const alerts = await Alert.find();
   res.json(alerts);
 });
 
-// Add a new alert (optional for debugging/testing)
-app.post('/api/alerts', (req, res) => {
-  const newAlert = { ...req.body, id: Date.now() };
-  alerts.push(newAlert);
-  res.status(201).send('Alert added successfully');
-});
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Backend running on http://localhost:${port}`);
-});
+// Start Server
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
