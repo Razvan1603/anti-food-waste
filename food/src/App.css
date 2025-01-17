@@ -129,6 +129,12 @@ ul li {
 ul li:last-child {
   border-bottom: none;
 }
+#switchBtn{
+  margin-top: 10px;
+  
+
+   
+}
 
 ul li strong {
   font-weight: bold;

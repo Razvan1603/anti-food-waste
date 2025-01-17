@@ -17,19 +17,19 @@ const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key';
 const swaggerDocument = YAML.load('./swagger.yaml');
 
 const app = express();
-const PORT = 5000;
+const PORT = 5020;
 
 // Middleware
 app.use(express.json());
 
-// Configurare CORS
+
 const corsOptions = {
-  origin: 'http://localhost:3000', // Permite cereri doar din acest domeniu
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specifică metodele permise
-  allowedHeaders: ['Content-Type', 'Authorization'], // Specifică header-ele permise
+  origin: 'http://localhost:3000', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
 };
 
-app.use(cors()); // Aplică middleware-ul CORS
+app.use(cors()); // apply cors middleware
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // MongoDB connection
@@ -110,14 +110,17 @@ app.get('/api/groups', authenticate, async (req, res) => {
 
 app.post('/api/groups', authenticate, async (req, res) => {
   const { name, tag } = req.body;
+  console.log('Received group:', { name, tag }); 
   try {
     const newGroup = new Group({ name, tag });
     await newGroup.save();
     res.status(201).json({ message: 'Group added successfully', group: newGroup });
   } catch (error) {
+    console.error('Error adding group:', error); 
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Alerts
 app.get('/api/alerts', authenticate, async (req, res) => {

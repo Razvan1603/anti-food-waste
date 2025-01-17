@@ -2,32 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
+const BASE_URL = 'http://localhost:5020'; // Adresa serverului
+
+// Componenta de autentificare (Login/Register)
 function LoginRegister({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
-
-
-function submitUsername(e){
-  setUsername(e.target.value);
-}
-function submitPassword(e){
-  setPassword(e.target.value);
-}
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const endpoint = isLogin ? '/api/login' : '/api/register';
-    console.log(username);
 
-    fetch(`http://localhost:5000${endpoint}`, {
+    fetch(`${BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     })
       .then((res) => {
-        if (!res.ok) throw new Error('Request failed');
-        console.log(res);
+        if (!res.ok) {
+          return res.json().then((error) => {
+            throw new Error(error.message || 'Request failed');
+          });
+        }
         return res.json();
       })
       .then((data) => {
@@ -35,10 +33,11 @@ function submitPassword(e){
           localStorage.setItem('token', data.token);
           onLogin(username);
         } else if (!isLogin) {
-          alert('Registration successful');
+          alert('Registration successful! Please log in.');
+          setIsLogin(true);
         }
       })
-      .catch(() => alert('Error occurred'));
+      .catch((error) => setErrorMessage(error.message));
   };
 
   return (
@@ -49,14 +48,14 @@ function submitPassword(e){
           type="text"
           placeholder="Username"
           value={username}
-          onChange={submitUsername}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
-          onChange={submitPassword}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
         <button type="submit">{isLogin ? 'Login' : 'Register'}</button>
@@ -64,10 +63,12 @@ function submitPassword(e){
       <button onClick={() => setIsLogin(!isLogin)}>
         Switch to {isLogin ? 'Register' : 'Login'}
       </button>
+      {errorMessage && <p className="error">{errorMessage}</p>}
     </div>
   );
 }
 
+// Componenta principală a aplicației
 function Dashboard({ username }) {
   const [fridgeItems, setFridgeItems] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -79,61 +80,73 @@ function Dashboard({ username }) {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
 
-    fetch('/api/fridge', { headers })
-      .then((response) => response.json())
+    fetch(`${BASE_URL}/api/fridge`, { headers })
+      .then((res) => res.json())
       .then((data) => setFridgeItems(data));
 
-    fetch('/api/groups', { headers })
-      .then((response) => response.json())
+    fetch(`${BASE_URL}/api/groups`, { headers })
+      .then((res) => res.json())
       .then((data) => setGroups(data));
 
-    fetch('/api/alerts', { headers })
-      .then((response) => response.json())
+    fetch(`${BASE_URL}/api/alerts`, { headers })
+      .then((res) => res.json())
       .then((data) => setAlerts(data));
   }, []);
 
   const handleAddItem = () => {
+    if (!newItem.name.trim() || !newItem.expiryDate) {
+      alert('Please provide a valid name and expiry date.');
+      return;
+    }
+
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
-    fetch('/api/fridge', {
+    fetch(`${BASE_URL}/api/fridge`, {
       method: 'POST',
       headers,
       body: JSON.stringify(newItem),
-    }).then((response) => {
-      if (response.ok) {
-        alert('Item added successfully!');
-        setFridgeItems([...fridgeItems, newItem]);
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to add item');
+        return res.json();
+      })
+      .then((data) => {
+        setFridgeItems([...fridgeItems, data.item]);
         setNewItem({ name: '', expiryDate: '', category: 'Dairy' });
-      } else {
-        alert('Failed to add item');
-      }
-    });
+      })
+      .catch((err) => alert(err.message));
   };
 
   const handleAddGroup = () => {
+    if (!newGroup.name.trim() || !newGroup.tag.trim()) {
+      alert('Please provide both group name and tag.');
+      return;
+    }
+
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
-    fetch('/api/groups', {
+    fetch(`${BASE_URL}/api/groups`, {
       method: 'POST',
       headers,
       body: JSON.stringify(newGroup),
-    }).then((response) => {
-      if (response.ok) {
-        alert('Group added successfully!');
-        setGroups([...groups, newGroup]);
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to add group');
+        return res.json();
+      })
+      .then((data) => {
+        setGroups([...groups, data.group]);
         setNewGroup({ name: '', tag: '' });
-      } else {
-        alert('Failed to add group');
-      }
-    });
+      })
+      .catch((err) => alert(err.message));
   };
 
   return (
-    <div className="App">
+    <div className="dashboard">
       <header>
-        <h1>Food Sharing App</h1>
+        <h1>Welcome to Food Sharing App</h1>
         <div className="user-info">
           <span>👤 {username}</span>
           <button
@@ -148,9 +161,9 @@ function Dashboard({ username }) {
       </header>
 
       <main>
-        <section className="fridge">
+        <section>
           <h2>Your Fridge</h2>
-          <div className="add-item">
+          <div>
             <input
               type="text"
               placeholder="Food Name"
@@ -175,15 +188,15 @@ function Dashboard({ username }) {
           <ul>
             {fridgeItems.map((item) => (
               <li key={item.id}>
-                <strong>{item.name}</strong> - {item.expiryDate} - {item.category}
+                {item.name} - {item.expiryDate} - {item.category}
               </li>
             ))}
           </ul>
         </section>
 
-        <section className="groups">
+        <section>
           <h2>Your Groups</h2>
-          <div className="add-group">
+          <div>
             <input
               type="text"
               placeholder="Group Name"
@@ -192,7 +205,7 @@ function Dashboard({ username }) {
             />
             <input
               type="text"
-              placeholder="Tag (e.g., Vegetarian)"
+              placeholder="Tag"
               value={newGroup.tag}
               onChange={(e) => setNewGroup({ ...newGroup, tag: e.target.value })}
             />
@@ -207,7 +220,7 @@ function Dashboard({ username }) {
           </ul>
         </section>
 
-        <section className="alerts">
+        <section>
           <h2>Alerts</h2>
           <ul>
             {alerts.map((alert) => (
@@ -220,6 +233,7 @@ function Dashboard({ username }) {
   );
 }
 
+// Componenta principală a aplicației
 function App() {
   const [username, setUsername] = useState(null);
 
@@ -238,5 +252,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;
