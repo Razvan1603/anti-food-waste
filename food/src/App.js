@@ -90,10 +90,13 @@ function Dashboard({ username }) {
       .then((res) => res.json())
       .then((data) => setGroups(data));
 
-
-    fetch(`${BASE_URL}/api/alerts`, { headers })
+      fetch(`${BASE_URL}/api/alerts`, { headers })
       .then((res) => res.json())
-      .then((data) => setAlerts(data));
+      .then((data) => {
+        console.log('Alerts data:', data);
+        setAlerts(data);
+      })
+      .catch((err) => console.error('Error fetching alerts:', err));
   }, []);
 
   const handleAddItem = () => {
@@ -224,13 +227,19 @@ function Dashboard({ username }) {
         </section>
 
         <section>
-          <h2>Alerts</h2>
-          <ul>
-            {alerts.map((alert) => (
-              <li key={alert.id}>{alert.message}</li>
-            ))}
-          </ul>
-        </section>
+  <h2>Alerts</h2>
+  {alerts.length === 0 ? (
+    <p>No items expiring soon.</p>
+  ) : (
+    <ul>
+      {alerts.map((alert) => (
+        <li key={alert._id}>
+          {alert.name} (Category: {alert.category}) - Expiry: {new Date(alert.expiryDate).toLocaleDateString()}
+        </li>
+      ))}
+    </ul>
+  )}
+</section>
       </main>
     </div>
   );

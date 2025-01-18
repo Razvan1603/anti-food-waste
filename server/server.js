@@ -130,9 +130,33 @@ app.post('/api/groups', authenticate, async (req, res) => {
 
 
 // Alerts
-app.get('/api/alerts', authenticate, async (req, res) => {
-  const alerts = await Alert.find();
-  res.json(alerts);
+app.get('/api/alerts', async (req, res) => {
+  const now = new Date();
+  const thresholdDate = new Date();
+  thresholdDate.setDate(thresholdDate.getDate() + 5);
+  thresholdDate.setHours(23, 59, 59, 999); // Prag de 5 zile
+
+  console.log('Fetching alerts...');
+  console.log('Current date:', now);
+  console.log('Threshold date:', thresholdDate);
+
+  try {
+    // Preluăm toate obiectele din baza de date pentru a le inspecta
+    const allItems = await FridgeItem.find({});
+    console.log('All fridge items:', allItems);
+
+    // Aplicăm filtrul pentru expiryDate
+    const alerts = await FridgeItem.find({
+      expiryDate: { $lte: thresholdDate }, // Filtrare pe baza datei
+    });
+
+    console.log('Filtered alerts:', alerts);
+
+    res.json(alerts);
+  } catch (error) {
+    console.error('Error fetching alerts:', error.message);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Start Server
