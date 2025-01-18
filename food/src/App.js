@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
 import FoodList from './FoodList';
-
+import Friends from './Friends';
 
 const BASE_URL = 'http://localhost:5020'; 
 
@@ -107,7 +107,7 @@ function Dashboard({ username }) {
   }, []);
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('ro-RO');  // Formatează data pentru România
+    return new Date(date).toLocaleDateString('ro-RO');  
   };
   const handleAddItem = () => {
     if (!newItem.name.trim() || !newItem.expiryDate) {
@@ -170,8 +170,9 @@ function Dashboard({ username }) {
         <h1>Welcome to Food Sharing App</h1>
         <div className="user-info">
           <span>👤 {username}</span>
-          <button id="friendlist">Friends</button>
           <button id="foodList" onClick={handleFoodListClick}>Check food</button>
+          <button id="friendlist" onClick={() => navigate('/friends')}>Friends</button>
+
           <button
             onClick={() => {
               localStorage.removeItem('token');
@@ -277,12 +278,9 @@ function App() {
           path="/dashboard"
           element={username ? <Dashboard username={username} /> : <Navigate to="/" />}
         />
-         <Route
-          path="/food-list"
-          element={<FoodList />}  // Rutează către FoodList
-        />
+        <Route path="/food-list" element={<FoodList />} />
+        <Route path="/friends" element={<Friends />} /> {/* Adăugăm ruta pentru Friends */}
       </Routes>
-      
     </Router>
   );
 }

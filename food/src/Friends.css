@@ -1,0 +1,92 @@
+.friends {
+    padding: 2em;
+    max-width: 600px;
+    margin: 3em auto;
+    background: linear-gradient(135deg, #ffffff, #e3f2fd);
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .friends h2 {
+    margin-bottom: 1em;
+    text-align: center;
+    color: #01579b;
+  }
+  
+  .friends input {
+    padding: 1em;
+    width: calc(100% - 2.5em);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+    background: linear-gradient(135deg, #e8f5e9, #ffffff);
+  }
+  
+  .friends input:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+  }
+  
+  .friends button {
+    margin-top: 1em;
+    padding: 0.7em 1.5em;
+    border-radius: 20px;
+    font-size: 1em;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(90deg, #43a047, #1b5e20);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  .friends button:hover {
+    background: linear-gradient(90deg, #66bb6a, #388e3c);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .friends ul {
+    margin-top: 2em;
+    padding: 0;
+    list-style: none;
+  }
+  
+  .friends ul li {
+    padding: 0.8em 1em;
+    margin-bottom: 0.5em;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #ffffff, #f1f8e9);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .friends ul li:last-child {
+    margin-bottom: 0;
+  }
+  
+  .friends ul li strong {
+    font-weight: bold;
+    color: #01579b;
+  }
+  
+  .friends .error {
+    margin-top: 1em;
+    color: #d32f2f;
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  @media (max-width: 768px) {
+    .friends {
+      padding: 1em;
+    }
+  
+    .friends input {
+      width: calc(100% - 2em);
+    }
+  }
+  
