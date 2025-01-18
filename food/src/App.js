@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 import './App.css';
 import FoodList from './FoodList';
 
+
 const BASE_URL = 'http://localhost:5020'; 
 
 
@@ -84,6 +85,7 @@ function Dashboard({ username }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
+    
 
 
     fetch(`${BASE_URL}/api/fridge`, { headers })
@@ -112,6 +114,8 @@ function Dashboard({ username }) {
       alert('Please provide a valid name and expiry date.');
       return;
     }
+  ;
+
 
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -138,6 +142,7 @@ function Dashboard({ username }) {
       return;
     }
   
+    
 
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
