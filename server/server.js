@@ -10,6 +10,8 @@ const User = require('./models/user.js');
 const FridgeItem = require('./models/fridgeItem');
 const Group = require('./models/group');
 const Alert = require('./models/alert');
+const Friend = require('./models/friend'); // Asigură-te că calea este corectă
+
 
 // Configurare .env
 dotenv.config();
