@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Friends.css'; 
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 const BASE_URL = 'http://localhost:5020';
 
@@ -7,6 +8,7 @@ function Friends() {
   const [friends, setFriends] = useState([]);
   const [newFriend, setNewFriend] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const navigate=useNavigate();
   useEffect(() => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
@@ -29,6 +31,9 @@ function Friends() {
         setErrorMessage('Failed to fetch friends.');
       });
   }, []);
+  const handleHomeClick = () => {
+    navigate('/dashboard');  
+  };
   
 
   const handleAddFriend = () => {
@@ -75,6 +80,24 @@ function Friends() {
   
   return (
     <div className="friends">
+        <div className="dashboard">
+      <header>
+        <h1>Food Sharing App</h1>
+        <div className="user-info">
+      
+
+         <button onClick={handleHomeClick}>Home</button>
+          <button
+            onClick={() => {
+              localStorage.removeItem('token');
+              window.location.href = '/';
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+      </div>
       <h2>Friends List</h2>
       <div>
         <input
