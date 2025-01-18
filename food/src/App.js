@@ -99,6 +99,9 @@ function Dashboard({ username }) {
       .catch((err) => console.error('Error fetching alerts:', err));
   }, []);
 
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('ro-RO');  // Formatează data pentru România
+  };
   const handleAddItem = () => {
     if (!newItem.name.trim() || !newItem.expiryDate) {
       alert('Please provide a valid name and expiry date.');
@@ -149,6 +152,7 @@ function Dashboard({ username }) {
       .catch((err) => alert(err.message));
   };
 
+
   return (
     <div className="dashboard">
       <header>
@@ -194,7 +198,7 @@ function Dashboard({ username }) {
           <ul>
             {fridgeItems.map((item) => (
               <li key={item.id}>
-                {item.name} - {item.expiryDate} - {item.category}
+                {item.name} - {formatDate(item.expiryDate)} - {item.category}
               </li>
             ))}
           </ul>
