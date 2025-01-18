@@ -1,7 +1,7 @@
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f7f7f7;
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #e0f7fa, #80deea);
   color: #333;
 }
 
@@ -9,16 +9,17 @@ h1, h2 {
   margin: 0;
   padding: 0.5em 0;
   text-align: center;
+  color: #004d40;
 }
 
 header {
-  background-color: #4caf50;
+  background: linear-gradient(90deg, #43a047, #2e7d32);
   color: white;
   padding: 1em;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 header .user-info {
@@ -28,26 +29,31 @@ header .user-info {
 
 header .user-info span {
   margin-right: 1em;
+  font-weight: bold;
 }
 
 button {
   cursor: pointer;
   border: none;
-  padding: 0.5em 1em;
-  border-radius: 4px;
+  padding: 0.7em 1.5em;
+  border-radius: 20px;
   font-size: 1em;
+  font-weight: bold;
   color: white;
-  background-color: #4caf50;
-  transition: background-color 0.3s;
+  background: linear-gradient(90deg, #43a047, #1b5e20);
+  transition: all 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 button:hover {
-  background-color: #45a049;
+  background: linear-gradient(90deg, #66bb6a, #388e3c);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
 }
 
 button:disabled {
-  background-color: #ccc;
+  background: #ccc;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .login-register {
@@ -55,32 +61,35 @@ button:disabled {
   margin: 5em auto;
   padding: 2em;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #ffffff, #e3f2fd);
 }
 
 .login-register h2 {
   margin-bottom: 1em;
   text-align: center;
+  color: #01579b;
 }
 
 .login-register form {
   display: flex;
   flex-direction: column;
-  gap: 1em;
+  gap: 1.2em;
 }
 
 input {
-  padding: 0.8em;
+  padding: 1em;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1em;
+  background: linear-gradient(135deg, #e8f5e9, #ffffff);
 }
 
 input:focus {
   outline: none;
   border-color: #4caf50;
-  box-shadow: 0 0 4px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
 }
 
 main {
@@ -91,28 +100,30 @@ main {
 }
 
 section {
-  background: white;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #ffffff, #e3f2fd);
+  border-radius: 12px;
   padding: 1.5em;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 section h2 {
   margin-bottom: 1em;
+  color: #01579b;
 }
 
 .add-item, .add-group {
   display: flex;
   flex-direction: column;
   gap: 1em;
-  margin-bottom: 1em;
+  margin-bottom: 1.5em;
 }
 
 select {
-  padding: 0.8em;
+  padding: 1em;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1em;
+  background: linear-gradient(135deg, #e8f5e9, #ffffff);
 }
 
 ul {
@@ -122,18 +133,15 @@ ul {
 }
 
 ul li {
-  padding: 0.5em 0;
-  border-bottom: 1px solid #ddd;
+  padding: 0.8em 1em;
+  margin-bottom: 0.5em;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ffffff, #f1f8e9);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 ul li:last-child {
-  border-bottom: none;
-}
-#switchBtn{
-  margin-top: 10px;
-  
-
-   
+  margin-bottom: 0;
 }
 
 ul li strong {
@@ -142,6 +150,30 @@ ul li strong {
 
 .alerts ul li {
   color: #d32f2f;
+  font-weight: bold;
+}
+
+.switch-to-register {
+  display: flex;
+  justify-content: center; 
+  margin-top: 12px;
+}
+
+.switch-to-register button {
+  padding: 0.7em 1.5em;
+  border-radius: 20px;
+  font-size: 1em;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(90deg, #0288d1, #01579b);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.switch-to-register button:hover {
+  background: linear-gradient(90deg, #03a9f4, #0277bd);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 768px) {

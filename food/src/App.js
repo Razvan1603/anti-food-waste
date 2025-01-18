@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
-const BASE_URL = 'http://localhost:5020'; // Adresa serverului
+const BASE_URL = 'http://localhost:5020'; 
 
-// Componenta de autentificare (Login/Register)
+
 function LoginRegister({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -68,7 +68,7 @@ function LoginRegister({ onLogin }) {
   );
 }
 
-// Componenta principală a aplicației
+
 function Dashboard({ username }) {
   const [fridgeItems, setFridgeItems] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -80,13 +80,16 @@ function Dashboard({ username }) {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
 
+
     fetch(`${BASE_URL}/api/fridge`, { headers })
       .then((res) => res.json())
       .then((data) => setFridgeItems(data));
 
+
     fetch(`${BASE_URL}/api/groups`, { headers })
       .then((res) => res.json())
       .then((data) => setGroups(data));
+
 
     fetch(`${BASE_URL}/api/alerts`, { headers })
       .then((res) => res.json())
@@ -233,7 +236,7 @@ function Dashboard({ username }) {
   );
 }
 
-// Componenta principală a aplicației
+
 function App() {
   const [username, setUsername] = useState(null);
 
@@ -252,6 +255,5 @@ function App() {
     </Router>
   );
 }
-
 
 export default App;
