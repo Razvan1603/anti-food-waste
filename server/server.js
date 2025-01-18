@@ -99,6 +99,27 @@ app.get('/api/fridgelist', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.patch('/api/fridgelist/:_id', (req, res) => {
+  const { _id } = req.params;  // _id luat din parametrii URL
+  const { available } = req.body; // Starea claimed trimisă în body
+
+  console.log(`Updating item with _id: ${_id}, claimed: ${available}`);  // Log pentru debugging
+
+  // Căutăm alimentul după _id și actualizăm câmpul "claimed"
+  FridgeItem.findByIdAndUpdate(_id, { available }, { new: false })
+    .then(updatedItem => {
+      if (!updatedItem) {
+        return res.status(404).json({ error: 'Item not found' });
+      }
+      console.log('Updated item:', updatedItem);  // Log pentru a vedea rezultatul
+      res.json(updatedItem);  // Răspundem cu alimentul actualizat
+    })
+    .catch(err => {
+      console.error('Error during update:', err);  // Log pentru eroare
+      res.status(500).json({ error: err.message });  // Tratează eroarea și o trimite ca JSON
+    });
+});
+
 
 app.post('/api/fridge', authenticate, async (req, res) => {
   const { name, expiryDate, category } = req.body;
