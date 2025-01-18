@@ -10,7 +10,6 @@ const User = require('./models/user.js');
 const FridgeItem = require('./models/fridgeItem');
 const Group = require('./models/group');
 const Alert = require('./models/alert');
-const Friend = require('./models/friend'); // Modelul Friend
 
 // Configurare .env
 dotenv.config();
@@ -23,13 +22,14 @@ const PORT = 5020;
 // Middleware
 app.use(express.json());
 
+
 const corsOptions = {
-  origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: 'http://localhost:3000', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
 };
 
-app.use(cors());
+app.use(cors()); // apply cors middleware
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // MongoDB connection
@@ -57,8 +57,6 @@ const authenticate = (req, res, next) => {
 };
 
 // Routes
-
-// User Registration
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -71,11 +69,12 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// User Login
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
+  console.log(username, password);
   try {
     const user = await User.findOne({ username });
+    console.log(user);
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -94,12 +93,70 @@ app.get('/api/fridge', authenticate, async (req, res) => {
 
 app.get('/api/fridgelist', async (req, res) => {
   try {
-    const items = await FridgeItem.find();
+    const items = await FridgeItem.find(); 
     res.json(items);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+// Backend: app.js sau routes.js
+app.post('/api/friends', authenticate, async (req, res) => {
+  const { username } = req.body;
+  
+  if (!username) {
+    return res.status(400).json({ error: 'Username is required' });
+  }
+  
+  try {
+    const newFriend = new Friend({
+      username,
+      owner: req.user.username, // Asociem prietenul cu utilizatorul curent
+    });
+
+    // Salvăm prietenul în baza de date
+    await newFriend.save();
+
+    // Returnăm un răspuns valid
+    res.status(201).json({ message: 'Friend added successfully', friend: newFriend });
+  } catch (error) {
+    console.error('Error adding friend:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/friends', authenticate, async (req, res) => {
+  try {
+    // Asigură-te că acest query returnează datele corecte
+    const friends = await Friend.find({ owner: req.user.username });
+    console.log('Found friends:', friends);  // Logare pentru debugging
+    res.json(friends);  // Trimite lista de prieteni ca răspuns
+  } catch (error) {
+    console.error('Error fetching friends:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.patch('/api/fridgelist/:_id', (req, res) => {
+  const { _id } = req.params;  // _id luat din parametrii URL
+  const { available } = req.body; // Starea claimed trimisă în body
+
+  console.log(`Updating item with _id: ${_id}, claimed: ${available}`);  // Log pentru debugging
+
+  
+  FridgeItem.findByIdAndUpdate(_id, { available }, { new: true })
+    .then(updatedItem => {
+      if (!updatedItem) {
+        return res.status(404).json({ error: 'Item not found' });
+      }
+      console.log('Updated item:', updatedItem);  // Log pentru a vedea rezultatul
+      res.json(updatedItem);  // Răspundem cu alimentul actualizat
+    })
+    .catch(err => {
+      console.error('Error during update:', err);  // Log pentru eroare
+      res.status(500).json({ error: err.message });  // Tratează eroarea și o trimite ca JSON
+    });
+});
+
 
 app.post('/api/fridge', authenticate, async (req, res) => {
   const { name, expiryDate, category } = req.body;
@@ -109,7 +166,7 @@ app.post('/api/fridge', authenticate, async (req, res) => {
       expiryDate,
       category,
       available: true,
-      owner: req.user.username,
+      owner: req.user.username, // Asociem utilizatorului conectat
     });
     await newItem.save();
     res.status(201).json({ message: 'Item added successfully', item: newItem });
@@ -117,27 +174,6 @@ app.post('/api/fridge', authenticate, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-app.patch('/api/fridgelist/:_id', (req, res) => {
-  const { _id } = req.params; // _id luat din parametrii URL
-  const { available } = req.body; // Starea claimed trimisă în body
-
-  console.log(`Updating item with _id: ${_id}, available: ${available}`); // Log pentru debugging
-
-  FridgeItem.findByIdAndUpdate(_id, { available }, { new: true })
-    .then((updatedItem) => {
-      if (!updatedItem) {
-        return res.status(404).json({ error: 'Item not found' });
-      }
-      console.log('Updated item:', updatedItem); // Log pentru a vedea rezultatul
-      res.json(updatedItem); // Răspundem cu alimentul actualizat
-    })
-    .catch((err) => {
-      console.error('Error during update:', err); // Log pentru eroare
-      res.status(500).json({ error: err.message }); // Tratează eroarea și o trimite ca JSON
-    });
-});
-
 // Groups
 app.get('/api/groups', authenticate, async (req, res) => {
   const groups = await Group.find({ owner: req.user.username });
@@ -150,7 +186,7 @@ app.post('/api/groups', authenticate, async (req, res) => {
     const newGroup = new Group({
       name,
       tag,
-      owner: req.user.username,
+      owner: req.user.username, // Asociem utilizatorului conectat
     });
     await newGroup.save();
     res.status(201).json({ message: 'Group added successfully', group: newGroup });
@@ -159,81 +195,33 @@ app.post('/api/groups', authenticate, async (req, res) => {
   }
 });
 
+
 // Alerts
 app.get('/api/alerts', async (req, res) => {
   const now = new Date();
   const thresholdDate = new Date();
   thresholdDate.setDate(thresholdDate.getDate() + 5);
-  thresholdDate.setHours(23, 59, 59, 999);
+  thresholdDate.setHours(23, 59, 59, 999); // Prag de 5 zile
+
+  console.log('Fetching alerts...');
+  console.log('Current date:', now);
+  console.log('Threshold date:', thresholdDate);
 
   try {
+    // Preluăm toate obiectele din baza de date pentru a le inspecta
+    const allItems = await FridgeItem.find({});
+    console.log('All fridge items:', allItems);
+
+    // Aplicăm filtrul pentru expiryDate
     const alerts = await FridgeItem.find({
-      expiryDate: { $lte: thresholdDate },
+      expiryDate: { $lte: thresholdDate }, // Filtrare pe baza datei
     });
+
+    console.log('Filtered alerts:', alerts);
+
     res.json(alerts);
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Friends
-app.get('/api/friends', authenticate, async (req, res) => {
-  try {
-    const friends = await Friend.find({ owner: req.user.username });
-    res.json(friends);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post('/api/friends', authenticate, async (req, res) => {
-  const { username } = req.body;
-  const currentUsername = req.user.username;
-
-  if (username === currentUsername) {
-    return res.status(400).json({ message: 'You cannot add yourself as a friend.' });
-  }
-
-  try {
-    const targetUser = await User.findOne({ username });
-    if (!targetUser) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
-
-    const existingFriendship = await Friend.findOne({ owner: currentUsername, username });
-    if (existingFriendship) {
-      return res.status(400).json({ message: 'Friendship already exists.' });
-    }
-
-    const newFriendForCurrentUser = new Friend({ username, owner: currentUsername });
-    const newFriendForTargetUser = new Friend({ username: currentUsername, owner: username });
-
-    await newFriendForCurrentUser.save();
-    await newFriendForTargetUser.save();
-
-    res.status(201).json({
-      message: 'Friendship added successfully.',
-      friends: [newFriendForCurrentUser, newFriendForTargetUser],
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.delete('/api/friends/:username', authenticate, async (req, res) => {
-  const { username } = req.params;
-  const currentUsername = req.user.username;
-
-  try {
-    const friendToDelete = await Friend.findOneAndDelete({ owner: currentUsername, username });
-    const reciprocalFriendToDelete = await Friend.findOneAndDelete({ owner: username, username: currentUsername });
-
-    if (!friendToDelete || !reciprocalFriendToDelete) {
-      return res.status(404).json({ message: 'Friendship not found.' });
-    }
-
-    res.status(200).json({ message: 'Friendship removed successfully.' });
-  } catch (error) {
+    console.error('Error fetching alerts:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
