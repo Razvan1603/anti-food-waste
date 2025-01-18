@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import './FoodList.css'; 
 
 function FoodList() {
   const [foodItems, setFoodItems] = useState([]);
@@ -20,7 +20,10 @@ function FoodList() {
       <ul>
         {foodItems.map((item) => (
           <li key={item.id}>
-           {item.owner} - {item.name} - {new Date(item.expiryDate).toLocaleDateString()} - {item.category}
+            <strong>{item.name}</strong> 
+            <span>({item.category})</span>
+            <small>Owner: {item.owner}</small>
+            <small>Expiry: {new Date(item.expiryDate).toLocaleDateString()}</small>
           </li>
         ))}
       </ul>
