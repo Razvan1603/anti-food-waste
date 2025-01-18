@@ -1,5 +1,5 @@
-// FoodList.js
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 function FoodList() {
   const [foodItems, setFoodItems] = useState([]);
@@ -8,7 +8,7 @@ function FoodList() {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
 
-    fetch('http://localhost:5020/api/fridge', { headers })
+    fetch('http://localhost:5020/api/fridgelist', { headers })
       .then((res) => res.json())
       .then((data) => setFoodItems(data))
       .catch((err) => console.error('Error fetching food items:', err));
@@ -20,7 +20,7 @@ function FoodList() {
       <ul>
         {foodItems.map((item) => (
           <li key={item.id}>
-            {item.name} - {new Date(item.expiryDate).toLocaleDateString()} - {item.category}
+           {item.owner} - {item.name} - {new Date(item.expiryDate).toLocaleDateString()} - {item.category}
           </li>
         ))}
       </ul>

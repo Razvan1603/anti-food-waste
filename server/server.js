@@ -91,6 +91,15 @@ app.get('/api/fridge', authenticate, async (req, res) => {
   res.json(items);
 });
 
+app.get('/api/fridgelist', async (req, res) => {
+  try {
+    const items = await FridgeItem.find(); 
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/fridge', authenticate, async (req, res) => {
   const { name, expiryDate, category } = req.body;
   try {
