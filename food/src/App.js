@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
+import FoodList from './FoodList';
 
 const BASE_URL = 'http://localhost:5020'; 
 
@@ -75,6 +76,10 @@ function Dashboard({ username }) {
   const [alerts, setAlerts] = useState([]);
   const [newItem, setNewItem] = useState({ name: '', expiryDate: '', category: 'Dairy' });
   const [newGroup, setNewGroup] = useState({ name: '', tag: '' });
+  const navigate = useNavigate();
+  const handleFoodListClick = () => {
+    navigate('/food-list');  // Redirecționează către pagina food-list
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -132,6 +137,7 @@ function Dashboard({ username }) {
       alert('Please provide both group name and tag.');
       return;
     }
+  
 
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -159,6 +165,8 @@ function Dashboard({ username }) {
         <h1>Welcome to Food Sharing App</h1>
         <div className="user-info">
           <span>👤 {username}</span>
+          <button id="friendlist">Friends</button>
+          <button id="foodList" onClick={handleFoodListClick}>Check food</button>
           <button
             onClick={() => {
               localStorage.removeItem('token');
@@ -264,7 +272,12 @@ function App() {
           path="/dashboard"
           element={username ? <Dashboard username={username} /> : <Navigate to="/" />}
         />
+         <Route
+          path="/food-list"
+          element={<FoodList />}  // Rutează către FoodList
+        />
       </Routes>
+      
     </Router>
   );
 }
