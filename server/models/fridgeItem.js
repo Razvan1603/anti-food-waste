@@ -5,6 +5,7 @@ const fridgeItemSchema = new mongoose.Schema({
   expiryDate: { type: String, required: true },
   category: { type: String, required: true },
   available: { type: Boolean, default: true },
+  owner: { type: String, required: true }, 
 });
 
 module.exports = mongoose.model('FridgeItem', fridgeItemSchema);

@@ -87,36 +87,43 @@ app.post('/api/login', async (req, res) => {
 
 // Fridge Items
 app.get('/api/fridge', authenticate, async (req, res) => {
-  const items = await FridgeItem.find();
+  const items = await FridgeItem.find({ owner: req.user.username });
   res.json(items);
 });
 
 app.post('/api/fridge', authenticate, async (req, res) => {
   const { name, expiryDate, category } = req.body;
   try {
-    const newItem = new FridgeItem({ name, expiryDate, category, available: true });
+    const newItem = new FridgeItem({
+      name,
+      expiryDate,
+      category,
+      available: true,
+      owner: req.user.username, // Asociem utilizatorului conectat
+    });
     await newItem.save();
     res.status(201).json({ message: 'Item added successfully', item: newItem });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
 // Groups
 app.get('/api/groups', authenticate, async (req, res) => {
-  const groups = await Group.find();
+  const groups = await Group.find({ owner: req.user.username });
   res.json(groups);
 });
 
 app.post('/api/groups', authenticate, async (req, res) => {
   const { name, tag } = req.body;
-  console.log('Received group:', { name, tag }); 
   try {
-    const newGroup = new Group({ name, tag });
+    const newGroup = new Group({
+      name,
+      tag,
+      owner: req.user.username, // Asociem utilizatorului conectat
+    });
     await newGroup.save();
     res.status(201).json({ message: 'Group added successfully', group: newGroup });
   } catch (error) {
-    console.error('Error adding group:', error); 
     res.status(500).json({ error: error.message });
   }
 });

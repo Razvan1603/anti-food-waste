@@ -60,7 +60,7 @@ function LoginRegister({ onLogin }) {
         />
         <button type="submit">{isLogin ? 'Login' : 'Register'}</button>
       </form>
-      <button onClick={() => setIsLogin(!isLogin)}>
+      <button id="switchBtn" onClick={() => setIsLogin(!isLogin)}>
         Switch to {isLogin ? 'Register' : 'Login'}
       </button>
       {errorMessage && <p className="error">{errorMessage}</p>}

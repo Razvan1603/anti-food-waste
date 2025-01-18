@@ -9,7 +9,7 @@ h1, h2 {
   margin: 0;
   padding: 0.5em 0;
   text-align: center;
-  color: #004d40;
+  color: white;
 }
 
 header {
@@ -20,6 +20,10 @@ header {
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+#switchBtn{
+  margin-top: 10px;
+  margin-left: 109px;
 }
 
 header .user-info {
