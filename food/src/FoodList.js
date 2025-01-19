@@ -92,6 +92,10 @@ const handleShareOnFacebook = (itemName) => {
       return 0;
     });
   };
+  const handleShareOnInstagram = (itemName) => {
+    const instagramURL = `https://www.instagram.com/create/story/?text=${encodeURIComponent('Check out this food item: ' + itemName)}`;
+    window.open(instagramURL, '_blank');
+  };
 
   const filteredItems = handleSort(handleSearch(fridgeItems));
 
@@ -156,6 +160,11 @@ const handleShareOnFacebook = (itemName) => {
               onClick={() => handleShareOnFacebook(item.name)}
             >
               Share on Facebook
+            </button>
+            <button
+              onClick={() => handleShareOnInstagram(item.name)}
+            >
+              Share on Instagram
             </button>
           </li>
         ))}
