@@ -4,22 +4,23 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 
 const BASE_URL = 'http://localhost:5020';
 
-function Friends() {
+const Friends = () => {
   const [friends, setFriends] = useState([]);
   const [newFriend, setNewFriend] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const navigate=useNavigate();
+  const navigate = useNavigate();
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
-  
+
     fetch(`${BASE_URL}/api/friends`, { headers })
       .then((res) => res.json())
       .then((data) => {
         console.log('Data received:', data);
         if (Array.isArray(data)) {
           const friendsWithUsername = data.filter(friend => friend && friend.username);
-          console.log('Filtered friends:', friendsWithUsername);  // Logăm lista de prieteni validați
+          console.log('Filtered friends:', friendsWithUsername);
           setFriends(friendsWithUsername);
         } else {
           console.error('Invalid data format received');
@@ -31,27 +32,23 @@ function Friends() {
         setErrorMessage('Failed to fetch friends.');
       });
   }, []);
+
   const handleHomeClick = () => {
-    navigate('/dashboard');  
+    navigate('/dashboard');
   };
-  
 
   const handleAddFriend = () => {
     if (!newFriend.trim()) {
       alert('Please enter a valid username.');
       return;
     }
-  
+
     const token = localStorage.getItem('token');
-    const headers = { 
-      Authorization: `Bearer ${token}`, 
-      'Content-Type': 'application/json' 
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     };
-  
-    // Adăugăm prietenul în lista locală înainte de a primi răspunsul
-    const tempFriend = { username: newFriend, owner: 'me' };  // Sau folosește datele corespunzătoare pentru un prieten
-    setFriends((prevFriends) => [...prevFriends, tempFriend]);
-    
+
     fetch(`${BASE_URL}/api/friends`, {
       method: 'POST',
       headers,
@@ -59,44 +56,46 @@ function Friends() {
     })
       .then((res) => {
         if (!res.ok) {
-          throw new Error('Failed to add friend.');
+          return res.json().then((error) => {
+            throw new Error(error.message);
+          });
         }
         return res.json();
       })
       .then((data) => {
-        // În cazul în care răspunsul este corect, confirmăm adăugarea
         console.log('Friend added successfully:', data);
+        setFriends((prevFriends) => [...prevFriends, { username: newFriend, owner: 'me' }]);
         setNewFriend('');
       })
       .catch((err) => {
         console.error('Error adding friend:', err.message);
-        // În cazul în care există o eroare, eliminăm prietenul din listă
-        setFriends((prevFriends) => prevFriends.filter(friend => friend.username !== newFriend));
         alert(err.message);
       });
   };
-  
-  
-  
+
+  // Eliminăm duplicatele din lista de prieteni
+  const uniqueFriends = friends.filter(
+    (friend, index, self) =>
+      index === self.findIndex((f) => f.username === friend.username)
+  );
+
   return (
     <div className="friends">
-        <div className="dashboard">
-      <header>
-        <h1>Food Sharing App</h1>
-        <div className="user-info">
-      
-
-         <button onClick={handleHomeClick}>Home</button>
-          <button
-            onClick={() => {
-              localStorage.removeItem('token');
-              window.location.href = '/';
-            }}
-          >
-            Logout
-          </button>
-        </div>
-      </header>
+      <div className="dashboard">
+        <header>
+          <h1>Food Sharing App</h1>
+          <div className="user-info">
+            <button onClick={handleHomeClick}>Home</button>
+            <button
+              onClick={() => {
+                localStorage.removeItem('token');
+                window.location.href = '/';
+              }}
+            >
+              Logout
+            </button>
+          </div>
+        </header>
       </div>
       <h2>Friends List</h2>
       <div>
@@ -110,10 +109,9 @@ function Friends() {
       </div>
       {errorMessage && <p className="error">{errorMessage}</p>}
       <ul>
-        {friends.length > 0 ? (
-          friends.map((friend, index) => (
+        {uniqueFriends.length > 0 ? (
+          uniqueFriends.map((friend, index) => (
             <li key={index}>
-              {/* Verifică dacă friend.username există înainte de a-l afișa */}
               <strong>{friend.username ? friend.username : 'Unknown User'}</strong>
             </li>
           ))
@@ -123,6 +121,6 @@ function Friends() {
       </ul>
     </div>
   );
-}
+};
 
 export default Friends;
