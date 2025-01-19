@@ -141,7 +141,7 @@ app.patch('/api/fridgelist/:_id', (req, res) => {
 // Groups
 app.get('/api/groups', authenticate, async (req, res) => {
   try {
-    const groups = await Group.find().populate('members', 'username'); // ✅ Populează doar username
+    const groups = await Group.find().populate('members', 'username'); 
     res.status(200).json(groups);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -163,9 +163,7 @@ app.post('/api/groups', authenticate, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// Ruta pentru a adăuga un prieten într-un grup
-// API-ul de adăugare a prietenului în grup
-// API-ul de adăugare a prietenului într-un grup
+
 app.post('/api/groups/add-friend', authenticate, async (req, res) => {
   const { username, group } = req.body;
 

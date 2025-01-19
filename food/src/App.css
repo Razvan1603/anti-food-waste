@@ -40,13 +40,14 @@ button {
   cursor: pointer;
   border: none;
   padding: 0.7em 1.5em;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 1em;
   font-weight: bold;
   color: white;
   background: linear-gradient(90deg, #43a047, #1b5e20);
   transition: all 0.3s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  margin-right: 12px;
 }
 
 button:hover {
