@@ -48,6 +48,8 @@ button {
   transition: all 0.3s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   margin-right: 12px;
+  margin-top: 12px;
+  margin-bottom: 12px;
 }
 
 button:hover {
@@ -89,6 +91,7 @@ input {
   border-radius: 8px;
   font-size: 1em;
   background: linear-gradient(135deg, #e8f5e9, #ffffff);
+  margin-right: 12px;
 }
 
 input:focus {
