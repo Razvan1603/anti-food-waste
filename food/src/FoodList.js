@@ -29,7 +29,24 @@ function FoodList() {
   const handleHomeClick = () => {
     navigate('/dashboard');
   };
-
+// Functie pentru a partaja pe Facebook
+const handleShareOnFacebook = (itemName) => {
+    if (window.FB) {
+      window.FB.ui({
+        method: 'share',
+        href: window.location.href, // sau un link personalizat pentru postare
+        quote: `Check out this food item: ${itemName}`,
+      }, function(response) {
+        if (response && !response.error_message) {
+          alert('Successfully shared on Facebook!');
+        } else {
+          alert('Error while sharing on Facebook.');
+        }
+      });
+    } else {
+      alert('Facebook SDK is not loaded.');
+    }
+  };
   const handleClaim = (_id) => {
     const token = localStorage.getItem('token');
     const headers = {
@@ -134,6 +151,11 @@ function FoodList() {
               disabled={!item.available}
             >
               {item.available ? 'Claim' : 'Claimed'}
+            </button>
+            <button
+              onClick={() => handleShareOnFacebook(item.name)}
+            >
+              Share on Facebook
             </button>
           </li>
         ))}
