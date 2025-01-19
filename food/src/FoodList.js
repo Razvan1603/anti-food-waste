@@ -9,7 +9,7 @@ function FoodList() {
   const [searchName, setSearchName] = useState('');
   const [searchOwner, setSearchOwner] = useState('');
   const [sortField, setSortField] = useState('');
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' pentru crescător, 'desc' pentru descrescător
+  const [sortOrder, setSortOrder] = useState('asc'); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,7 +29,7 @@ function FoodList() {
   const handleHomeClick = () => {
     navigate('/dashboard');
   };
-// Functie pentru a partaja pe Facebook
+
 useEffect(() => {
     const loadFacebookSDK = () => {
       if (!window.FB) {
@@ -39,7 +39,7 @@ useEffect(() => {
         script.defer = true;
         script.onload = () => {
           window.FB.init({
-            appId: '1257471185336948', // Înlocuiește cu ID-ul aplicației tale Facebook
+            appId: '1257471185336948',
             autoLogAppEvents: true,
             xfbml: true,
             version: 'v15.0',
@@ -51,13 +51,13 @@ useEffect(() => {
     loadFacebookSDK();
   }, []);
   
-  // Funcția de partajare pe Facebook
+
   const handleShareOnFacebook = (itemName) => {
     if (window.FB) {
       window.FB.ui(
         {
           method: 'share',
-          href: window.location.href, // Link-ul paginii curente sau un URL specific
+          href: window.location.href, 
           quote: `Check out this food item: ${itemName}`,
         },
         (response) => {

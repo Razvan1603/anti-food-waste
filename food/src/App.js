@@ -286,7 +286,7 @@ function App() {
           element={username ? <Dashboard username={username} /> : <Navigate to="/" />}
         />
         <Route path="/food-list" element={<FoodList />} />
-        <Route path="/friends" element={<Friends />} /> {/* Adăugăm ruta pentru Friends */}
+        <Route path="/friends" element={<Friends />} /> 
       </Routes>
     </Router>
   );

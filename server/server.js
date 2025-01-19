@@ -12,7 +12,7 @@ const Group = require('./models/group');
 const Alert = require('./models/alert');
 const Friend = require('./models/friend'); // Modelul Friend
 
-// Configurare .env
+
 dotenv.config();
 const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key';
 const swaggerDocument = YAML.load('./swagger.yaml');
@@ -119,22 +119,22 @@ app.post('/api/fridge', authenticate, async (req, res) => {
 });
 
 app.patch('/api/fridgelist/:_id', (req, res) => {
-  const { _id } = req.params; // _id luat din parametrii URL
-  const { available } = req.body; // Starea claimed trimisă în body
+  const { _id } = req.params; 
+  const { available } = req.body; 
 
-  console.log(`Updating item with _id: ${_id}, available: ${available}`); // Log pentru debugging
+  console.log(`Updating item with _id: ${_id}, available: ${available}`);
 
   FridgeItem.findByIdAndUpdate(_id, { available }, { new: true })
     .then((updatedItem) => {
       if (!updatedItem) {
         return res.status(404).json({ error: 'Item not found' });
       }
-      console.log('Updated item:', updatedItem); // Log pentru a vedea rezultatul
-      res.json(updatedItem); // Răspundem cu alimentul actualizat
+      console.log('Updated item:', updatedItem); 
+      res.json(updatedItem); 
     })
     .catch((err) => {
-      console.error('Error during update:', err); // Log pentru eroare
-      res.status(500).json({ error: err.message }); // Tratează eroarea și o trimite ca JSON
+      console.error('Error during update:', err); 
+      res.status(500).json({ error: err.message }); 
     });
 });
 
@@ -148,7 +148,7 @@ app.get('/api/groups', authenticate, async (req, res) => {
   }
 });
 
-// Creare grup
+
 app.post('/api/groups', authenticate, async (req, res) => {
   const { name, tag } = req.body;
   try {
@@ -164,6 +164,7 @@ app.post('/api/groups', authenticate, async (req, res) => {
   }
 });
 
+
 app.post('/api/groups/add-friend', authenticate, async (req, res) => {
   const { username, group } = req.body;
 
@@ -172,38 +173,37 @@ app.post('/api/groups/add-friend', authenticate, async (req, res) => {
   }
 
   try {
-    // Găsim grupul după nume
+    
     const groupDoc = await Group.findOne({ name: group });
     if (!groupDoc) {
       return res.status(404).json({ error: 'Group not found' });
     }
 
-    // Găsim prietenul după username
-    const friend = await Friend.findOne({ username });  // Căutăm prietenul
+    
+    const friend = await Friend.findOne({ username });  
     if (!friend) {
       return res.status(404).json({ error: 'Friend not found' });
     }
 
-    // Verificăm dacă prietenul este deja în grup
+    
     if (groupDoc.members.includes(friend._id)) {
       return res.status(400).json({ error: 'Friend is already a member of the group' });
     }
 
-    // Adăugăm prietenul în grup
+
     groupDoc.members.push(friend._id);
     await groupDoc.save();
 
-    // Populăm grupul cu detaliile prietenilor
     const populatedGroup = await Group.findById(groupDoc._id)
       .populate('members', 'username');
-        // Populăm cu username
+        
         console.log("Updated group:", populatedGroup);
 
     res.status(200).json({
       group: {
         name: populatedGroup.name,
         tag: populatedGroup.tag,
-        members: populatedGroup.members,  // Membrii vor avea acum username
+        members: populatedGroup.members,   
       },
     });
   } catch (err) {
@@ -213,7 +213,7 @@ app.post('/api/groups/add-friend', authenticate, async (req, res) => {
 });
 
 
-// Obține membri din grup
+
 app.get('/api/groups/:groupId/members', authenticate, async (req, res) => {
   const { groupId } = req.params;
   try {
@@ -259,28 +259,27 @@ app.post('/api/groups/add-friend', authenticate, async (req, res) => {
   const { groupId, friendId } = req.body; 
 
   try {
-    // Verificăm dacă grupul există
+ 
     const group = await Group.findById(groupId);
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    // Verificăm dacă prietenul există
+
     const friend = await Friend.findById(friendId);
     if (!friend) {
       return res.status(404).json({ message: 'Friend not found' });
     }
 
-    // Verificăm dacă prietenul este deja în grup
     if (group.members.includes(friendId)) {
       return res.status(400).json({ message: 'Friend is already in the group' });
     }
 
-    // Adăugăm prietenul în grup
+  
     group.members.push(friendId);
     await group.save();
 
-    // Populăm membrii grupului pentru a returna detalii complete
+ 
     const updatedGroup = await Group.findById(groupId).populate('members', 'username');
 
     res.status(200).json({ message: 'Friend added to group successfully', group: updatedGroup });
