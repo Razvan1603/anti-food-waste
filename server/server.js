@@ -140,10 +140,15 @@ app.patch('/api/fridgelist/:_id', (req, res) => {
 
 // Groups
 app.get('/api/groups', authenticate, async (req, res) => {
-  const groups = await Group.find({ owner: req.user.username });
-  res.json(groups);
+  try {
+    const groups = await Group.find().populate('members', 'username'); // ✅ Populează doar username
+    res.status(200).json(groups);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
+// Creare grup
 app.post('/api/groups', authenticate, async (req, res) => {
   const { name, tag } = req.body;
   try {
@@ -158,6 +163,73 @@ app.post('/api/groups', authenticate, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// Ruta pentru a adăuga un prieten într-un grup
+// API-ul de adăugare a prietenului în grup
+// API-ul de adăugare a prietenului într-un grup
+app.post('/api/groups/add-friend', authenticate, async (req, res) => {
+  const { username, group } = req.body;
+
+  if (!username || !group) {
+    return res.status(400).json({ error: 'Username and group are required' });
+  }
+
+  try {
+    // Găsim grupul după nume
+    const groupDoc = await Group.findOne({ name: group });
+    if (!groupDoc) {
+      return res.status(404).json({ error: 'Group not found' });
+    }
+
+    // Găsim prietenul după username
+    const friend = await Friend.findOne({ username });  // Căutăm prietenul
+    if (!friend) {
+      return res.status(404).json({ error: 'Friend not found' });
+    }
+
+    // Verificăm dacă prietenul este deja în grup
+    if (groupDoc.members.includes(friend._id)) {
+      return res.status(400).json({ error: 'Friend is already a member of the group' });
+    }
+
+    // Adăugăm prietenul în grup
+    groupDoc.members.push(friend._id);
+    await groupDoc.save();
+
+    // Populăm grupul cu detaliile prietenilor
+    const populatedGroup = await Group.findById(groupDoc._id)
+      .populate('members', 'username');
+        // Populăm cu username
+        console.log("Updated group:", populatedGroup);
+
+    res.status(200).json({
+      group: {
+        name: populatedGroup.name,
+        tag: populatedGroup.tag,
+        members: populatedGroup.members,  // Membrii vor avea acum username
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// Obține membri din grup
+app.get('/api/groups/:groupId/members', authenticate, async (req, res) => {
+  const { groupId } = req.params;
+  try {
+    const group = await Group.findById(groupId).populate('members');
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+    res.status(200).json(group.members);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 
 // Alerts
 app.get('/api/alerts', async (req, res) => {
@@ -185,6 +257,40 @@ app.get('/api/friends', authenticate, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.post('/api/groups/add-friend', authenticate, async (req, res) => {
+  const { groupId, friendId } = req.body; 
+
+  try {
+    // Verificăm dacă grupul există
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    // Verificăm dacă prietenul există
+    const friend = await Friend.findById(friendId);
+    if (!friend) {
+      return res.status(404).json({ message: 'Friend not found' });
+    }
+
+    // Verificăm dacă prietenul este deja în grup
+    if (group.members.includes(friendId)) {
+      return res.status(400).json({ message: 'Friend is already in the group' });
+    }
+
+    // Adăugăm prietenul în grup
+    group.members.push(friendId);
+    await group.save();
+
+    // Populăm membrii grupului pentru a returna detalii complete
+    const updatedGroup = await Group.findById(groupId).populate('members', 'username');
+
+    res.status(200).json({ message: 'Friend added to group successfully', group: updatedGroup });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 app.post('/api/friends', authenticate, async (req, res) => {
   const { username } = req.body;

@@ -8,8 +8,13 @@ const Friends = () => {
   const [friends, setFriends] = useState([]);
   const [newFriend, setNewFriend] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [groups, setGroups] = useState([]);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupTag, setNewGroupTag] = useState('');
+  const [friendGroupSelections, setFriendGroupSelections] = useState({});
   const navigate = useNavigate();
 
+  // Fetch friends
   useEffect(() => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
@@ -17,25 +22,26 @@ const Friends = () => {
     fetch(`${BASE_URL}/api/friends`, { headers })
       .then((res) => res.json())
       .then((data) => {
-        console.log('Data received:', data);
-        if (Array.isArray(data)) {
-          const friendsWithUsername = data.filter(friend => friend && friend.username);
-          console.log('Filtered friends:', friendsWithUsername);
-          setFriends(friendsWithUsername);
-        } else {
-          console.error('Invalid data format received');
-          setErrorMessage('Invalid data format received.');
-        }
+        setFriends(data.filter((friend) => friend && friend.username));
       })
-      .catch((err) => {
-        console.error('Error fetching friends:', err);
-        setErrorMessage('Failed to fetch friends.');
-      });
+      .catch(() => setErrorMessage('Failed to fetch friends.'));
   }, []);
 
-  const handleHomeClick = () => {
-    navigate('/dashboard');
-  };
+  // Fetch groups
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
+
+    fetch(`${BASE_URL}/api/groups`, { headers })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Groups received from API:", data); // ✅ Debug
+        setGroups(data);
+      })
+      .catch(() => setErrorMessage('Failed to fetch groups.'));
+  }, []);
+
+  const handleHomeClick = () => navigate('/dashboard');
 
   const handleAddFriend = () => {
     if (!newFriend.trim()) {
@@ -54,31 +60,80 @@ const Friends = () => {
       headers,
       body: JSON.stringify({ username: newFriend }),
     })
-      .then((res) => {
-        if (!res.ok) {
-          return res.json().then((error) => {
-            throw new Error(error.message);
-          });
-        }
-        return res.json();
-      })
-      .then((data) => {
-        console.log('Friend added successfully:', data);
-        setFriends((prevFriends) => [...prevFriends, { username: newFriend, owner: 'me' }]);
+      .then((res) => res.json())
+      .then(() => {
+        setFriends((prev) => [...prev, { username: newFriend }]);
         setNewFriend('');
       })
-      .catch((err) => {
-        console.error('Error adding friend:', err.message);
-        alert(err.message);
-      });
+      .catch(() => alert('Failed to add friend.'));
   };
 
-  // Eliminăm duplicatele din lista de prieteni
-  const uniqueFriends = friends.filter(
-    (friend, index, self) =>
-      index === self.findIndex((f) => f.username === friend.username)
-  );
+  const handleCreateGroup = () => {
+    if (!newGroupName.trim() || !newGroupTag.trim()) {
+      alert('Please provide a valid group name and tag.');
+      return;
+    }
 
+    const token = localStorage.getItem('token');
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+
+    fetch(`${BASE_URL}/api/groups`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ name: newGroupName, tag: newGroupTag }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setGroups((prev) => [...prev, data.group]);
+        setNewGroupName('');
+        setNewGroupTag('');
+      })
+      .catch(() => alert('Failed to create group.'));
+  };
+
+  const handleGroupChange = (friendUsername, groupName) => {
+    setFriendGroupSelections((prev) => ({
+      ...prev,
+      [friendUsername]: groupName,
+    }));
+  };
+
+  const handleAddFriendToGroup = (friendUsername) => {
+    const selectedGroup = friendGroupSelections[friendUsername];
+
+    if (!selectedGroup) {
+      alert('Please select a group.');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+
+    fetch(`${BASE_URL}/api/groups/add-friend`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        username: friendUsername,
+        group: selectedGroup,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          alert(data.error);
+        } else {
+          alert(`Added ${friendUsername} to group ${selectedGroup}`);
+        }
+      })
+      .catch(() => alert('Failed to add friend to group.'));
+  };
+  console.log("Groups in React:", groups);
   return (
     <div className="friends">
       <div className="dashboard">
@@ -109,14 +164,67 @@ const Friends = () => {
       </div>
       {errorMessage && <p className="error">{errorMessage}</p>}
       <ul>
-        {uniqueFriends.length > 0 ? (
-          uniqueFriends.map((friend, index) => (
+        {friends.length > 0 ? (
+          friends.map((friend, index) => (
             <li key={index}>
-              <strong>{friend.username ? friend.username : 'Unknown User'}</strong>
+              <strong>{friend.username}</strong>
+              <select
+                onChange={(e) =>
+                  handleGroupChange(friend.username, e.target.value)
+                }
+                value={friendGroupSelections[friend.username] || ''}
+              >
+                <option value="">Select Group</option>
+                {groups.map((group) => (
+                  <option key={group._id} value={group.name}>
+                    {group.name} ({group.tag})
+                  </option>
+                ))}
+              </select>
+              <button onClick={() => handleAddFriendToGroup(friend.username)}>
+                Add to Group
+              </button>
             </li>
           ))
         ) : (
           <p>No friends found.</p>
+        )}
+      </ul>
+      <h2>Create New Group</h2>
+      <div>
+        <input
+          type="text"
+          placeholder="Group Name"
+          value={newGroupName}
+          onChange={(e) => setNewGroupName(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Group Tag (e.g., vegetarian)"
+          value={newGroupTag}
+          onChange={(e) => setNewGroupTag(e.target.value)}
+        />
+        <button onClick={handleCreateGroup}>Create Group</button>
+      </div>
+      <h2>Existing Groups</h2>
+      <ul>
+        {groups.length > 0 ? (
+          groups.map((group) => (
+            <li key={group._id}>
+              <strong>{group.name}</strong> ({group.tag})
+              <ul>
+                {group.members.length > 0 ? (
+                  group.members.map((member, index) => (
+                    <li key={index}>{member.username}</li>
+                  ))
+                ) : (
+                  <p>No members yet.</p>
+                )}
+              </ul>
+            </li>
+          ))
+        ) : (
+          <p>No groups found.</p>
         )}
       </ul>
     </div>
