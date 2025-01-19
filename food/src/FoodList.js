@@ -118,7 +118,7 @@ useEffect(() => {
     });
   };
   const handleShareOnInstagram = (itemName) => {
-    const instagramURL = `https://www.instagram.com/create/story/?text=${encodeURIComponent('Check out this food item: ' + itemName)}`;
+    const instagramURL = `https://www.instagram.com/`;
     window.open(instagramURL, '_blank');
   };
 
