@@ -30,19 +30,44 @@ function FoodList() {
     navigate('/dashboard');
   };
 // Functie pentru a partaja pe Facebook
-const handleShareOnFacebook = (itemName) => {
+useEffect(() => {
+    const loadFacebookSDK = () => {
+      if (!window.FB) {
+        const script = document.createElement('script');
+        script.src = 'https://connect.facebook.net/en_US/sdk.js';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+          window.FB.init({
+            appId: '1257471185336948', // Înlocuiește cu ID-ul aplicației tale Facebook
+            autoLogAppEvents: true,
+            xfbml: true,
+            version: 'v15.0',
+          });
+        };
+        document.body.appendChild(script);
+      }
+    };
+    loadFacebookSDK();
+  }, []);
+  
+  // Funcția de partajare pe Facebook
+  const handleShareOnFacebook = (itemName) => {
     if (window.FB) {
-      window.FB.ui({
-        method: 'share',
-        href: window.location.href, // sau un link personalizat pentru postare
-        quote: `Check out this food item: ${itemName}`,
-      }, function(response) {
-        if (response && !response.error_message) {
-          alert('Successfully shared on Facebook!');
-        } else {
-          alert('Error while sharing on Facebook.');
+      window.FB.ui(
+        {
+          method: 'share',
+          href: window.location.href, // Link-ul paginii curente sau un URL specific
+          quote: `Check out this food item: ${itemName}`,
+        },
+        (response) => {
+          if (response && !response.error_message) {
+            alert('Successfully shared on Facebook!');
+          } else {
+            alert('Error while sharing on Facebook.');
+          }
         }
-      });
+      );
     } else {
       alert('Facebook SDK is not loaded.');
     }
