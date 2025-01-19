@@ -79,7 +79,7 @@ function Dashboard({ username }) {
   const [newGroup, setNewGroup] = useState({ name: '', tag: '' });
   const navigate = useNavigate();
   const handleFoodListClick = () => {
-    navigate('/food-list');  // Redirecționează către pagina food-list
+    navigate('/food-list');  
   };
 
   useEffect(() => {
@@ -206,6 +206,13 @@ function Dashboard({ username }) {
               <option value="Dairy">Dairy</option>
               <option value="Vegetables">Vegetables</option>
               <option value="Meat">Meat</option>
+              <option value="Alcohol">Alcohol</option>
+              <option value="Juice">Juice</option>
+              <option value="Fruits">Fruits</option>
+              <option value="Fish">Fish</option>
+              <option value="Grains">Grains</option>
+              <option value="Oil">Oil</option>
+
             </select>
             <button onClick={handleAddItem}>Add Food</button>
           </div>
