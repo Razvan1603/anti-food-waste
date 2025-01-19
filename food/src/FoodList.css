@@ -61,6 +61,36 @@ body {
   .food-list ul li small {
     color: #757575;
   }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 1em;
+    justify-content: center;
+  }
+  
+  .filters input {
+    padding: 0.5em;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+  }
+  
+  .filters button {
+    padding: 0.5em 1em;
+    font-size: 1em;
+    color: #fff;
+    background-color: #43a047;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .filters button:hover {
+    background-color: #2e7d32;
+  }
   
   @media (max-width: 768px) {
     .food-list ul li {
